@@ -1,5 +1,8 @@
 import { App, Editor, Plugin, MarkdownPostProcessorContext, parseYaml, MarkdownRenderer } from 'obsidian';
 
+// Currently Iframes can only load local html files using absolute paths. I want in-vault html files to be rendered on other (synced) machines as well.
+
+// Plugin that gets local vault path, makes an absolute path for and loads an iframe from a local .html file.
 
 export default class EmbedPlugin extends Plugin {
 
@@ -12,7 +15,7 @@ export default class EmbedPlugin extends Plugin {
 	        // Validate content
 	        validate(json, el);
 	        // Generate iframe string
-			var frame = '<iframe src="file:' +this.app.vault.getRoot().vault.adapter.basePath + json.path + '" width="'+json.width+'" height="'+json.height+'" frameborder="0"></iframe>';
+			var frame = '<iframe src="file:' +this.app.vault.getRoot().vault.adapter.basePath + "/"+ json.path + '" width="'+json.width+'" height="'+json.height+'" frameborder="0"></iframe>';
 			// Render iframe using default renderer
 			await MarkdownRenderer.renderMarkdown(frame, el, '',
 											  this.app.workspace.activeLeaf.view);

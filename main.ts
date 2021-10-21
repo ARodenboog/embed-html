@@ -1,29 +1,33 @@
-import { App, Editor, MarkdownView, Plugin, FileView, MarkdownPostProcessorContext, parseYaml, MarkdownRenderer } from 'obsidian';
+import { App, Editor, Plugin, MarkdownPostProcessorContext, parseYaml, MarkdownRenderer } from 'obsidian';
 
-const EmbedBase = '<iframe src= width= height=  frameborder="0"></iframe>'
-
-
-const EmbedCode = (editor: Editor, path: str)=>{
-	let doc = editor.getDoc();
-	let cursor = doc.getCursor();
-	// const x = [EmbedBase.slice(0, position), b, EmbedBase.slice(position)]. join('')
-	doc.replaceRange([path,"Teststring"].join(""), cursor);
-}
 
 export default class EmbedPlugin extends Plugin {
 
 
 	async postprocessor(content: string, el: HTMLElement, ctx: MarkdownPostProcessorContext){
-// Render the code using the default renderer
-		var json = parseYaml(content);
-		var frame = '<iframe src="file:' +this.app.vault.getRoot().vault.adapter.basePath + json.path + '" width="'+json.width+'" height="'+json.height+'" frameborder="0"></iframe>';
-		await MarkdownRenderer.renderMarkdown(frame, el, '',
+		let json;
+	    try{
+	    	// Parse content of block
+	        json = parseYaml(content);
+	        // Validate content
+	        validate(json, el);
+	        // Generate iframe string
+			var frame = '<iframe src="file:' +this.app.vault.getRoot().vault.adapter.basePath + json.path + '" width="'+json.width+'" height="'+json.height+'" frameborder="0"></iframe>';
+			// Render iframe using default renderer
+			await MarkdownRenderer.renderMarkdown(frame, el, '',
 											  this.app.workspace.activeLeaf.view);
+	    } catch (error) {
+	    	// Catch parsing errors
+	        let errorDiv = document.createElement('div');
+	        errorDiv.textContent = "Couldn't render HTML:" + error;
+	        el.appendChild(errorDiv);
+	    }
+
+
 
 	}
 	async onload() {
 		console.log('Loading EmbedPlugin');
-		const base_path = this.app.vault.getRoot().vault.adapter.basePath
 		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		// Using this function will automatically remove the event listener when this plugin is disabled.
 		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
@@ -42,4 +46,18 @@ export default class EmbedPlugin extends Plugin {
 
 
 
+
+const allowValues = ["path", "width", "height"];
+
+const validate = (json: any, el: HTMLElement) => {
+    if(!json){
+        throw "There should be a valid JSON in this block."
+    }
+
+    Object.keys(json).forEach(key=>{
+        if(!allowValues.contains(key)){
+            throw "The only valid keys are path, width and height."
+        }
+    })
+}
 

@@ -7,7 +7,7 @@ This is a problem when using a vault on multiple machines with a different file 
 
 This plugin allows the creation of a code block called embedhtml, in which you specify the relative path of your .html file (relative to the vault), along with
 height and width of the iframe.
-The plugin will get the local path during rendering.
+The plugin will get the necessary full path during rendering, and render the file as an iframe.
 
 Example:
 
